@@ -1,0 +1,77 @@
+from keras.layers.convolutional import (Conv2D, MaxPooling2D,
+                                        ZeroPadding2D)
+from keras.layers.core import Dense, Dropout, Flatten
+from keras.models import Sequential
+from keras.optimizers import SGD, adam
+import os
+
+
+class VGG16:
+    def __init__(self, weights_path=None):
+        self.parameter = []
+        self.model = Sequential()
+
+        self.model.add(ZeroPadding2D((1, 1), input_shape=(32, 32, 1)))
+        self.model.add(Conv2D(32, 3, activation='relu'))
+        self.model.add(ZeroPadding2D((1, 1)))
+        self.model.add(Conv2D(32, 3, activation='relu'))
+        self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+        self.model.add(ZeroPadding2D((1, 1)))
+        self.model.add(Conv2D(64, 3, activation='relu'))
+        self.model.add(ZeroPadding2D((1, 1)))
+        self.model.add(Conv2D(64, 3, activation='relu'))
+        self.model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+
+        self.model.add(ZeroPadding2D((1, 1)))
+        self.model.add(Conv2D(128, 3, activation='relu'))
+        self.model.add(ZeroPadding2D((1, 1)))
+        self.model.add(Conv2D(128, 3, activation='relu'))
+#        self.model.add(ZeroPadding2D((1, 1)))
+#        self.model.add(Conv2D(256, 3, activation='relu'))
+        self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+#        self.model.add(ZeroPadding2D((1, 1)))
+        self.model.add(ZeroPadding2D((1, 1)))
+        self.model.add(Conv2D(256, 3, activation='relu'))
+        self.model.add(ZeroPadding2D((1, 1)))
+        self.model.add(Conv2D(256, 3, activation='relu'))
+        self.model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+
+        self.model.add(ZeroPadding2D((1, 1)))
+        self.model.add(Conv2D(512, 3, activation='relu'))
+        self.model.add(ZeroPadding2D((1, 1)))
+        self.model.add(Conv2D(512, 3, activation='relu'))
+#        self.model.add(ZeroPadding2D((1, 1)))
+#        self.model.add(Conv2D(512, 3, activation='relu'))
+        self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+        self.model.add(Flatten())
+        self.model.add(Dense(512, activation='relu'))
+        self.model.add(Dropout(0.6))
+#        self.model.add(Dense(4096, activation='relu'))
+#        self.model.add(Dropout(0.5))
+#        self.model.add(Dense(2048, activation='relu'))
+#        self.model.add(Dropout(0.5))
+        self.model.add(Dense(1))
+
+        self.model.compile(optimizer=adam(), loss='mse')
+
+        if os.path.exists(weights_path):
+            self.model.load_weights(weights_path)
+            print("********************Load Model Success*********************")
+
+    def train_by_batch(self, x, y, batch_size=200, epoch=10):
+        self.model.fit(x, y, batch_size=batch_size, epochs=epoch, verbose=1)
+
+    def predict(self, x):
+        return self.model.predict(x)
+
+    def save_parameter(self, modelpath):
+        self.model.save(modelpath)
+
+    def show_summary(self):
+        self.model.summary()
+
+    def train_on_batch(self, x, y):
+        return self.model.train_on_batch(x, y)
